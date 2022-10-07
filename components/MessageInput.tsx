@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { Input, Text, Chip } from '@mantine/core'
+import { Input, Text, Chip, ActionIcon } from '@mantine/core'
 import { useHotkeys } from '@mantine/hooks'
 import axios from 'axios'
 import { showNotification } from '@mantine/notifications'
 import { getCookie } from 'cookies-next'
 import { Message } from '../types'
+import { IconX } from '@tabler/icons'
 
 type Props = {
   channelName: string
@@ -42,8 +43,6 @@ const MessageInput = (props: Props) => {
     }
 
     if (replyingTo && replyingTo.id) {
-      console.log('replying to message: ', replyingTo.id)
-
       try {
         const res = await axios.post(
           '/api/create/reply',
@@ -115,6 +114,9 @@ const MessageInput = (props: Props) => {
             backgroundColor: '#f5f5f5',
             padding: 10,
             borderRadius: '15px 15px 0 0',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
           }}
         >
           replying to{' '}
@@ -123,10 +125,18 @@ const MessageInput = (props: Props) => {
               fontWeight: 'bold',
               textDecoration: 'underline',
               color: '#228be6',
+              marginLeft: 5,
             }}
           >
             @{props.replyingTo?.owner?.name}
           </span>
+          <ActionIcon
+            onClick={() => {
+              props.setReplyingTo({} as Message)
+            }}
+          >
+            <IconX />
+          </ActionIcon>
         </div>
       )}
       <Input

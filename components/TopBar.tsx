@@ -7,7 +7,7 @@ import { UserContext } from '../pages/_app'
 
 const TopBar = () => {
   //@ts-ignore
-  const { user, activeChannel } = useContext(UserContext)
+  const { user, activeChannel, setUser } = useContext(UserContext)
   const [_, __, logout] = useAuth()
 
   return (
@@ -34,7 +34,11 @@ const TopBar = () => {
         }}
       >
         {' '}
-        <IconHash /> {activeChannel.name}{' '}
+        {activeChannel?.name && (
+          <>
+            <IconHash /> {activeChannel.name}{' '}
+          </>
+        )}
       </Text>
       <div
         style={{
@@ -69,7 +73,14 @@ const TopBar = () => {
             <Text align="center" mb="md" mt="sm">
               Signed in as <b>{user?.name}</b>
             </Text>
-            <Button fullWidth color="red" onClick={logout}>
+            <Button
+              fullWidth
+              color="red"
+              onClick={() => {
+                logout()
+                setUser({})
+              }}
+            >
               Logout
             </Button>
           </Popover.Dropdown>

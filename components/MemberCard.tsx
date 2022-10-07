@@ -1,22 +1,30 @@
-import { Avatar } from '@mantine/core'
-import React from 'react'
+import { Avatar, Text } from '@mantine/core'
 import { User } from '../types'
 
-type Props = {
-  member: User
-}
-
-const MemberCard = (props: Props) => {
+const MemberCard = ({ user }: { user: User }) => {
   return (
-    <div>
+    <div
+      style={{
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        marginTop: '10px',
+      }}
+    >
       <Avatar
-        src={props.member.profilePic}
-        alt={props.member.name}
+        src={
+          user.profilePic ||
+          `https://avatars.dicebear.com/api/bottts/${user.id}.svg`
+        }
+        alt="Mantine"
         size="md"
-        radius={50}
-        style={{ margin: '0 auto' }}
+        style={{
+          marginRight: '10px',
+          border: '1px solid #e4e2e2',
+        }}
+        radius="xl"
       />
-      <p>{props.member.name}</p>
+      <Text>{user.name}</Text>
     </div>
   )
 }

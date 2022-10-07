@@ -14,6 +14,7 @@ const handler = async (req: any, res: any) => {
         },
         include: {
           owner: true,
+          reactions: true,
         },
       })
 
@@ -37,6 +38,7 @@ const handler = async (req: any, res: any) => {
       },
       include: {
         owner: true,
+        reactions: true,
       },
     })
 

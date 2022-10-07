@@ -1,5 +1,6 @@
 import Channel from './channel'
 import User from './user'
+import Reaction from './reaction'
 
 type Message = {
   id: string
@@ -13,6 +14,7 @@ type Message = {
   replies: Message[]
   replyTo: Message
   replyToId: string
+  reactions: Reaction[]
 }
 
 export default Message

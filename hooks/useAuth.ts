@@ -1,7 +1,6 @@
 import { showNotification } from '@mantine/notifications'
 import { getCookie, deleteCookie, setCookie } from 'cookies-next'
 import axios from 'axios'
-import { useRouter } from 'next/router'
 
 const login = async (email: string, password: string) => {
   try {

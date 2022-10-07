@@ -7,7 +7,7 @@ type Workspace = {
   icon: string
   description: string
   ownerId: string
-  owner: User
+  members: User[]
   channels: Channel[]
 }
 

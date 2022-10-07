@@ -6,24 +6,85 @@ import {
   Tooltip,
   ActionIcon,
 } from '@mantine/core'
-import React, { useState } from 'react'
-import { Message, User } from '../types'
+import React, { useContext, useState } from 'react'
+import { Message, Reaction, User } from '../types'
 import useFormatDate from '../hooks/useFormatDate'
 
 //icons
 import { IconMessage, IconMoodSmile } from '@tabler/icons'
 
+import { UserContext } from '../pages/_app'
+import { getCookie } from 'cookies-next'
+import axios from 'axios'
+import { showNotification } from '@mantine/notifications'
+
 type Props = {
   message: Message
   setReplyingTo: (replyingTo: Message) => void
+  showEmojiPicker: (show: boolean) => void
+  setCurrentMessage: (message: string) => void
 }
 
 const Message = (props: Props) => {
+  const { user: current_user } = useContext(UserContext) as { user: User }
   const msg = props.message
   const user: User = msg.owner
   const date = useFormatDate(new Date(msg.createdAt))
 
   const [showingReplies, setShowingReplies] = useState(false)
+
+  type ReactionCount = {
+    id: string
+    emoji: string
+    message: Message
+    messageId: string
+    users: string[]
+    count: number
+  }
+
+  const group_reactions = (reactions: Reaction[]): ReactionCount[] => {
+    const new_reactions: ReactionCount[] = []
+    for (let i = 0; i < reactions.length; i++) {
+      const reaction: any = reactions[i]
+
+      const reactionCount = reactions.filter((r) => r.emoji === reaction.emoji)
+
+      reaction.count = reactionCount.length
+      reaction.users = reactionCount.map((r) => r.userId)
+
+      if (!new_reactions.some((r) => r.emoji === reaction.emoji)) {
+        new_reactions.push(reaction)
+      }
+    }
+
+    return new_reactions as ReactionCount[]
+  }
+
+  const add_reaction = async (emoji: string, messageId: string) => {
+    const token = getCookie('auth-token')
+    if (!token) return
+
+    try {
+      axios.post(
+        '/api/create/reaction',
+        {
+          emoji: emoji,
+          messageId: messageId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+    } catch (error) {
+      showNotification({
+        title: 'Error',
+        message: 'An error occured',
+        color: 'red',
+      })
+    }
+  }
 
   return (
     <>
@@ -98,6 +159,45 @@ const Message = (props: Props) => {
                   <i>{date}</i>
                 </Text>
                 <Text>{msg.content}</Text>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  {group_reactions(msg.reactions || [])?.map(
+                    (reaction: ReactionCount) => {
+                      const isReacted = reaction.users.includes(
+                        current_user?.id || ''
+                      )
+                      return (
+                        <Button
+                          size="xs"
+                          mr={5}
+                          variant={isReacted ? 'filled' : 'outline'}
+                          color={isReacted ? 'blue' : 'gray'}
+                          onClick={() => add_reaction(reaction.emoji, msg.id)}
+                        >
+                          <img
+                            src={reaction?.emoji}
+                            alt="reaction"
+                            style={{
+                              width: '16px',
+                              height: '16px',
+                            }}
+                          />
+                          <div
+                            style={{
+                              width: '5px',
+                            }}
+                          />
+                          <Text>{reaction.count}</Text>
+                        </Button>
+                      )
+                    }
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -118,7 +218,8 @@ const Message = (props: Props) => {
                 marginRight: '10px',
               }}
               onClick={() => {
-                setShowingReplies(!showingReplies)
+                props.showEmojiPicker(true)
+                props.setCurrentMessage(msg.id)
               }}
             >
               <IconMoodSmile />
@@ -148,27 +249,32 @@ const Message = (props: Props) => {
           {showingReplies ? (
             msg?.replies.map((reply: Message) => {
               return (
-                <Message message={reply} setReplyingTo={props.setReplyingTo} />
+                <Message
+                  message={reply}
+                  setReplyingTo={props.setReplyingTo}
+                  showEmojiPicker={props.showEmojiPicker}
+                  setCurrentMessage={props.setCurrentMessage}
+                />
               )
             })
           ) : msg.replies.length > 0 ? (
             <Button
               onClick={() => setShowingReplies(true)}
-              variant="light"
+              variant="subtle"
               size="xs"
             >
-              show replies ({msg.replies.length})
+              {msg.replies.length} REPLIES
             </Button>
           ) : null}
         </div>
         {showingReplies && (
           <Button
             onClick={() => setShowingReplies(false)}
-            variant="light"
+            variant="subtle"
             color="red"
             size="xs"
           >
-            hide replies
+            HIDE
           </Button>
         )}
       </div>

@@ -60,21 +60,38 @@ const Layout = (props: Props) => {
       <div
         style={{
           width: '100%',
+          height: '100%',
           flex: 1,
         }}
       >
         <TopBar />
-        {props.children}
-      </div>
-      <div
-        style={{
-          flex: '0 0 220px',
-          height: '100%',
-          position: 'sticky',
-          top: 0,
-        }}
-      >
-        <MemberList />
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            height: '100%',
+          }}
+        >
+          <div
+            style={{
+              flex: 80,
+            }}
+          >
+            {props.children}
+          </div>
+          {router.pathname !== '/' && (
+            <div
+              style={{
+                flex: 20,
+                height: '100%',
+                position: 'sticky',
+                top: 60,
+              }}
+            >
+              <MemberList />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
