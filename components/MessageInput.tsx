@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { Input, Text, Chip, ActionIcon } from '@mantine/core'
-import { useHotkeys } from '@mantine/hooks'
 import axios from 'axios'
 import { showNotification } from '@mantine/notifications'
 import { getCookie } from 'cookies-next'
@@ -16,15 +15,6 @@ type Props = {
 
 const MessageInput = (props: Props) => {
   const [message, setMessage] = useState('')
-
-  useHotkeys([
-    [
-      'enter',
-      () => {
-        create_message(message, props.replyingTo)
-      },
-    ],
-  ])
 
   const create_message = async (
     message: string,
@@ -146,6 +136,11 @@ const MessageInput = (props: Props) => {
         value={message}
         onChange={(e: any) => {
           setMessage(e.currentTarget.value)
+        }}
+        onKeyDown={(e: any) => {
+          if (e.key === 'Enter') {
+            create_message(message, props.replyingTo)
+          }
         }}
       />
     </div>

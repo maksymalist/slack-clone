@@ -5,11 +5,25 @@ import {
   UnstyledButton,
   Tooltip,
   Title,
+  Button,
+  ActionIcon,
+  Modal,
+  Input,
+  Textarea,
 } from '@mantine/core'
-import { IconHash } from '@tabler/icons'
+import {
+  IconBriefcase,
+  IconCameraSelfie,
+  IconHash,
+  IconLink,
+  IconPlus,
+} from '@tabler/icons'
 import { Channel, User, Workspace } from '../types'
 import { UserContext } from '../pages/_app'
 import { useRouter } from 'next/router'
+import { getCookie } from 'cookies-next'
+import axios from 'axios'
+import { showNotification } from '@mantine/notifications'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -160,6 +174,19 @@ export default function DoubleNavbar() {
   const workspaceId = router.query.workspaceId as string
   const channelId = router.query.channelId as string
 
+  // modals
+
+  const [createWorkspaceModal, setCreateWorkspaceModal] = useState(false)
+  const [createChannelModal, setCreateChannelModal] = useState(false)
+
+  // inputs
+
+  const [workspaceName, setWorkspaceName] = useState('')
+  const [workspaceIcon, setWorkspaceIcon] = useState('')
+  const [workspaceDescription, setWorkspaceDescription] = useState('')
+
+  const [channelName, setChannelName] = useState('')
+
   useEffect(() => {
     if (!spaces) return
     if (workspaceId && channelId) {
@@ -179,71 +206,264 @@ export default function DoubleNavbar() {
     //setActiveChannel(spaces[0].channels[0])
   }, [spaces])
 
-  //@ts-ignore
+  const create_channel = async (workspace: Workspace, channelName: string) => {
+    try {
+      const token = getCookie('auth-token')
+
+      if (!token) {
+        router.push('/login')
+        return
+      }
+
+      const res = await axios.post(
+        '/api/create/channel',
+        {
+          workspace,
+          channelName,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      window.location.reload()
+    } catch (error: any) {
+      showNotification({
+        title: 'Error',
+        message: error,
+        color: 'red',
+      })
+    }
+  }
+
+  const create_workspace = async (
+    name: string,
+    icon: string,
+    description: string
+  ) => {
+    try {
+      const token = getCookie('auth-token')
+
+      if (!token) {
+        router.push('/login')
+        return
+      }
+
+      const res = await axios.post(
+        '/api/create/workspace',
+        {
+          name,
+          icon,
+          description,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      window.location.reload()
+    } catch (error: any) {
+      console.log(error)
+      showNotification({
+        title: 'Error',
+        message: error,
+        color: 'red',
+      })
+    }
+  }
 
   return (
-    <Navbar>
-      <Navbar.Section grow className={classes.wrapper}>
-        <div className={classes.aside}>
-          <div className={classes.logo}>
-            <img src="/slack.svg" style={{ width: 30, height: 30 }} />
-          </div>
-          {workspaces?.map((link: Workspace) => {
-            //@ts-ignore
-
-            return (
-              <Tooltip
-                label={link.name}
-                position="right"
-                withArrow
-                transitionDuration={0}
-                key={link.name}
-              >
-                <UnstyledButton
-                  onClick={() => setActiveWorkspace(link)}
-                  style={{
-                    marginTop: 20,
-                  }}
-                  className={cx(classes.mainLink, {
-                    [classes.mainLinkActive]: link.name === activeChannel.name,
-                  })}
-                >
-                  <img
-                    src={link.icon}
-                    style={{ borderRadius: '50%', width: 45, height: 45 }}
-                  />
-                </UnstyledButton>
-              </Tooltip>
-            )
-          })}
+    <>
+      <Modal
+        opened={createChannelModal}
+        onClose={() => setCreateChannelModal(false)}
+        title={`Create Channel in ${activeWorkspace?.name}`}
+      >
+        <Input
+          onChange={(e: any) => {
+            setChannelName(e.target.value)
+          }}
+          value={channelName}
+          placeholder="Channel Name"
+          icon={<IconHash />}
+        />
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
+          <Button
+            style={{
+              width: '100%',
+              marginTop: 20,
+            }}
+            onClick={() => {
+              create_channel(activeWorkspace, channelName)
+            }}
+          >
+            ✨ Create Channel ✨
+          </Button>
         </div>
-        <div className={classes.main}>
-          <Title order={4} className={classes.title}>
-            {activeWorkspace.name}
-          </Title>
+      </Modal>
+      <Modal
+        opened={createWorkspaceModal}
+        onClose={() => setCreateWorkspaceModal(false)}
+        title={`Create Workspace`}
+      >
+        <Input
+          onChange={(e: any) => {
+            setWorkspaceName(e.target.value)
+          }}
+          value={workspaceName}
+          placeholder="Workspace Name"
+          icon={<IconBriefcase />}
+        />
+        <Input
+          onChange={(e: any) => {
+            setWorkspaceIcon(e.target.value)
+          }}
+          value={workspaceIcon}
+          placeholder="Workspace Image URL (https://example.com/img.png)"
+          icon={<IconLink />}
+          mt={5}
+        />
 
-          {activeWorkspace?.channels?.map((link, index) => (
-            <a
+        <Textarea
+          label="Workspace Description"
+          value={workspaceDescription}
+          onChange={(e: any) => {
+            setWorkspaceDescription(e.target.value)
+          }}
+        />
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
+          <Button
+            style={{
+              width: '100%',
+              marginTop: 20,
+            }}
+            onClick={() => {
+              create_workspace(
+                workspaceName,
+                workspaceIcon,
+                workspaceDescription
+              )
+            }}
+          >
+            ✨ Create Workspace ✨
+          </Button>
+        </div>
+      </Modal>
+      <Navbar>
+        <Navbar.Section grow className={classes.wrapper}>
+          <div className={classes.aside}>
+            <div className={classes.logo}>
+              <img src="/slack.svg" style={{ width: 30, height: 30 }} />
+            </div>
+            {workspaces?.map((link: Workspace) => {
+              //@ts-ignore
+
+              return (
+                <Tooltip
+                  label={link.name}
+                  position="right"
+                  withArrow
+                  transitionDuration={0}
+                  key={link.name}
+                >
+                  <UnstyledButton
+                    onClick={() => setActiveWorkspace(link)}
+                    style={{
+                      marginTop: 20,
+                      borderRadius: '50%',
+                    }}
+                    className={cx(classes.mainLink, {
+                      [classes.mainLinkActive]:
+                        link.name === activeChannel.name,
+                    })}
+                  >
+                    <img
+                      src={link.icon}
+                      style={{ borderRadius: '50%', width: 45, height: 45 }}
+                    />
+                  </UnstyledButton>
+                </Tooltip>
+              )
+            })}
+            <Button
               style={{
+                marginTop: 20,
+                borderRadius: '50%',
+                width: 45,
+                height: 45,
+                padding: 10,
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
               }}
-              className={cx(classes.link, {
-                [classes.linkActive]: activeChannel === link,
-              })}
-              onClick={(event) => {
-                event.preventDefault()
-                router.push(`/workspace/${activeWorkspace.id}/${link.id}`)
-                setActiveChannel(link)
-              }}
-              key={index}
+              variant="light"
+              onClick={() => setCreateWorkspaceModal(true)}
             >
-              <IconHash color="#c4c4c4" />
-              {link.name}
-            </a>
-          ))}
-        </div>
-      </Navbar.Section>
-    </Navbar>
+              <IconPlus size={25} />
+            </Button>
+          </div>
+          <div className={classes.main}>
+            <Title order={4} className={classes.title}>
+              {activeWorkspace.name}
+            </Title>
+
+            {activeWorkspace?.channels?.map((link, index) => (
+              <a
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+                className={cx(classes.link, {
+                  [classes.linkActive]: activeChannel === link,
+                })}
+                onClick={(event) => {
+                  event.preventDefault()
+                  router.push(`/workspace/${activeWorkspace.id}/${link.id}`)
+                  setActiveChannel(link)
+                }}
+                key={index}
+              >
+                <IconHash color="#c4c4c4" />
+                {link.name}
+              </a>
+            ))}
+            {activeWorkspace.ownerId === user.id && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingInline: 10,
+                }}
+              >
+                <Button
+                  rightIcon={<IconPlus />}
+                  variant="white"
+                  fullWidth
+                  mt={10}
+                  onClick={() => setCreateChannelModal(true)}
+                >
+                  Add Channel
+                </Button>
+              </div>
+            )}
+          </div>
+        </Navbar.Section>
+      </Navbar>
+    </>
   )
 }

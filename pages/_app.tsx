@@ -1,6 +1,5 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
-import SideBar from '../components/SideBar'
 import { createContext, useEffect, useState } from 'react'
 
 import { MantineProvider } from '@mantine/core'

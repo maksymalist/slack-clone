@@ -84,8 +84,6 @@ export const getServerSideProps = async (context: any) => {
     })
     const channel: Channel = channelRes.data
 
-    console.log(messages)
-
     return {
       props: {
         messages,

@@ -144,8 +144,6 @@ export const getServerSideProps = async (context: any) => {
     workspaceId,
   })
 
-  console.log(workspace.data.ownerId, '^46&*%&*%&*$%*$%&%*&#^$($*@&#*$^#($^')
-
   return {
     props: {
       token,
