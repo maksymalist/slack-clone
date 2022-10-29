@@ -69,6 +69,18 @@ const Home: NextPage<Props> = ({ messages, channelId, channelName }) => {
 }
 
 export const getServerSideProps = async (context: any) => {
+
+    const token = context.req.cookies["auth-token"];
+
+    if (!token) {
+        return {
+            redirect: {
+                destination: "/login",
+                permanent: false,
+            },
+        };
+    }
+ 
   try {
     const channelId = context.params.channelId
     const workspaceId = context.params.workspaceId
@@ -103,5 +115,7 @@ export const getServerSideProps = async (context: any) => {
     }
   }
 }
+
+
 
 export default Home

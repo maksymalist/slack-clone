@@ -11,10 +11,34 @@ import useAuth from '../hooks/useAuth'
 import { useRouter } from 'next/router'
 import { UserContext } from '../pages/_app'
 import MemberList from './MemberList'
+import client from '../lib/apollo-client'
+import { gql } from 'apollo-server-micro'
+import { showNotification } from '@mantine/notifications'
 
 type Props = {
   children: React.ReactNode
 }
+
+const ME_QUERY = gql`
+  query Me {
+    me {
+      email
+      name
+      profilePic
+      workspaces {
+        id
+        name
+        icon
+        description
+        ownerId
+        channels {
+          id
+          name
+        }
+      }
+    }
+  }
+`
 
 const Layout = (props: Props) => {
   const auth: any = useContext(UserContext)
@@ -28,12 +52,33 @@ const Layout = (props: Props) => {
       return
     }
 
-    const res = await axios.get('/api/auth/me', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-    auth.setUser(res.data)
+    // try {
+    //   const { data } = await client.query({
+    //     query: ME_QUERY,
+    //   })
+    //   auth.setUser(data.me)
+    // } catch (error: any) {
+    //   showNotification({
+    //     title: 'Error',
+    //     message: error.message,
+    //     color: 'red',
+    //   })
+    // }
+
+    try {
+      const res = await axios.get('/api/auth/me', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      auth.setUser(res.data)
+    } catch (error: any) {
+      showNotification({
+        title: 'Error',
+        message: error.message,
+        color: 'red',
+      })
+    }
   }
   useEffect(() => {
     me()

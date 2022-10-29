@@ -1,7 +1,5 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import TopBar from '../components/TopBar'
-import SideBar from '../components/SideBar'
 import styles from '../styles/Home.module.css'
 import Layout from '../components/Layout'
 
@@ -28,6 +26,25 @@ const Home: NextPage = () => {
       </div>
     </Layout>
   )
+}
+
+
+export const getServerSideProps = async (context) => {
+    
+    const token = context.req.cookies["auth-token"];
+
+    if (!token) {
+        return {
+            redirect: {
+                destination: "/login",
+                permanent: false,
+            },
+        };
+    }
+    
+    return {
+        props: {},
+    }
 }
 
 export default Home
