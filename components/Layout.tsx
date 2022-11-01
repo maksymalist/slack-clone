@@ -52,26 +52,11 @@ const Layout = (props: Props) => {
       return
     }
 
-    // try {
-    //   const { data } = await client.query({
-    //     query: ME_QUERY,
-    //   })
-    //   auth.setUser(data.me)
-    // } catch (error: any) {
-    //   showNotification({
-    //     title: 'Error',
-    //     message: error.message,
-    //     color: 'red',
-    //   })
-    // }
-
     try {
-      const res = await axios.get('/api/auth/me', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const { data } = await client.query({
+        query: ME_QUERY,
       })
-      auth.setUser(res.data)
+      auth.setUser(data.me)
     } catch (error: any) {
       showNotification({
         title: 'Error',
@@ -79,6 +64,21 @@ const Layout = (props: Props) => {
         color: 'red',
       })
     }
+
+    // try {
+    //   const res = await axios.get('/api/auth/me', {
+    //     headers: {
+    //       Authorization: `Bearer ${token}`,
+    //     },
+    //   })
+    //   auth.setUser(res.data)
+    // } catch (error: any) {
+    //   showNotification({
+    //     title: 'Error',
+    //     message: error.message,
+    //     color: 'red',
+    //   })
+    // }
   }
   useEffect(() => {
     me()
